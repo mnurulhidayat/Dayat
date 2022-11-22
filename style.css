@@ -3,6 +3,32 @@
   background-color: #efe5fa;
 }
 
+.search-bar {
+  width: 150%;
+  max-width: 800px;
+  background: #b635ed33;
+  display: flex;
+  border-radius: 60px;
+  padding: 5px 5px;
+}
+
+.search-bar input {
+  background: transparent;
+  flex: 1;
+  border: 0;
+  outline: none;
+  padding: 6px 3px;
+  font-size: 20px;
+}
+
+.search-bar button {
+  border: 0;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+}
+
 #project {
   background-color: #efe5fa;
 }
