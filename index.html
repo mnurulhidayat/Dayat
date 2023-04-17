@@ -1,188 +1,362 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<html>
+  <meta charset="UTF-8" /><meta content="width=device-width, initial-scale=1, user-scalable=1, minimum-scale=1, maximum-scale=5" name="viewport" /><meta content="IE=edge" http-equiv="X-UA-Compatible" /><link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=Shippori+Antique&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark/dark.css" />
+  <script src="https://kit.fontawesome.com/4f3ce16e3e.js" crossorigin="anonymous"></script>
+  <link href="https://kuisberhadiah.likeadream.repl.co/style.css" rel="stylesheet" type="text/css" />
+  <script src="https://bukadulu.likeadream.repl.co/script.js"></script>
+  <head> </head>
+  <body>
+    <!--Bacground-->
+    <script>
+      var rnd = Math.random,
+        flr = Math.floor;
+      let canvas = document.createElement('canvas');
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
+      document.getElementsByTagName('body')[0].appendChild(canvas);
+      canvas.style.position = 'absolute';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
 
-    <!-- CSS Saya -->
-    <link rel="stylesheet" href="style.css" />
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
 
-    <!-- --------------------------------------------- -->
+      let ctx = canvas.getContext('2d');
 
-    <title>Portofolio | Dayat</title>
-  </head>
-  <body id="home">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark shadow fixed-top" style="background-color: #6f42c1">
-      <div class="container">
-        <a class="navbar-brand fw-bold" href="#">Dayat</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#home">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#about">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#project">Project</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#contact">Contact</a>
-            </li>
-          </ul>
-        </div>
+      function rndNum(num) {
+        return rnd() * num + 1;
+      }
+
+      function vector(x, y) {
+        this.x = x;
+        this.y = y;
+
+        this.add = function (vec2) {
+          this.x = this.x + vec2.x;
+          this.y = this.y + vec2.y;
+        };
+      }
+
+      function particle(pos, vel) {
+        this.pos = new vector(pos.x, pos.y);
+        this.vel = vel;
+        this.finish = false;
+        this.start = 0;
+
+        this.update = function (time) {
+          let timeSpan = time - this.start;
+
+          if (timeSpan > 500) {
+            this.finish = true;
+          }
+
+          if (!this.finish) {
+            this.pos.add(this.vel);
+            this.vel.y = this.vel.y + gravity;
+          }
+        };
+
+        this.draw = function () {
+          if (!this.finish) {
+            drawDot(this.pos.x, this.pos.y, 1);
+          }
+        };
+      }
+
+      function firework(x, y) {
+        this.pos = new vector(x, y);
+        this.vel = new vector(0, -rndNum(10) - 3);
+        this.color = 'hsl(' + rndNum(360) + ', 100%, 50%)';
+        this.size = 4;
+        this.finish = false;
+        this.start = 0;
+        let exParticles = [],
+          exPLen = 100;
+
+        let rootShow = true;
+
+        this.update = function (time) {
+          if (this.finish) {
+            return;
+          }
+
+          rootShow = this.vel.y < 0;
+
+          if (rootShow) {
+            this.pos.add(this.vel);
+            this.vel.y = this.vel.y + gravity;
+          } else {
+            if (exParticles.length === 0) {
+              flash = true;
+              for (let i = 0; i < exPLen; i++) {
+                exParticles.push(new particle(this.pos, new vector(-rndNum(10) + 5, -rndNum(10) + 5)));
+                exParticles[exParticles.length - 1].start = time;
+              }
+            }
+            let countFinish = 0;
+            for (let i = 0; i < exPLen; i++) {
+              let p = exParticles[i];
+              p.update(time);
+              if (p.finish) {
+                countFinish++;
+              }
+            }
+
+            if (countFinish === exPLen) {
+              this.finish = true;
+            }
+          }
+        };
+
+        this.draw = function () {
+          if (this.finish) {
+            return;
+          }
+
+          ctx.fillStyle = this.color;
+          if (rootShow) {
+            drawDot(this.pos.x, this.pos.y, this.size);
+          } else {
+            for (let i = 0; i < exPLen; i++) {
+              let p = exParticles[i];
+              p.draw();
+            }
+          }
+        };
+      }
+
+      function drawDot(x, y, size) {
+        ctx.beginPath();
+
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.closePath();
+      }
+
+      var fireworks = [],
+        gravity = 0.2,
+        snapTime = 0,
+        flash = false;
+
+      function init() {
+        let numOfFireworks = 20;
+        for (let i = 0; i < numOfFireworks; i++) {
+          fireworks.push(new firework(rndNum(canvas.width), canvas.height));
+        }
+      }
+
+      function update(time) {
+        for (let i = 0, len = fireworks.length; i < len; i++) {
+          let p = fireworks[i];
+          p.update(time);
+        }
+      }
+
+      function draw(time) {
+        update(time);
+
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        if (flash) {
+          flash = false;
+        }
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = 'white';
+        ctx.font = '30px Segoe UI';
+        let newTime = time - snapTime;
+        snapTime = time;
+
+        ctx.fillStyle = 'blue';
+        for (let i = 0, len = fireworks.length; i < len; i++) {
+          let p = fireworks[i];
+          if (p.finish) {
+            fireworks[i] = new firework(rndNum(canvas.width), canvas.height);
+            p = fireworks[i];
+            p.start = time;
+          }
+          p.draw();
+        }
+
+        window.requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', function () {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      });
+
+      init();
+      draw();
+    </script>
+    <!--Bacground End-->
+
+    <div id="bodyblur"></div>
+
+    <div id="konten">
+      <div id="fotoloveu">
+        <div class="image"><!-- Foto Akhir --><img src="https://i.postimg.cc/Rhzfr0FG/hbd.gif" id="animasi" width="130px" height="130px" /></div>
       </div>
-    </nav>
-    <!-- Akhir Navbar -->
 
-    <!-- Gambar Diri -->
-    <section class="jumbotron text-center">
-      <img src="img/saya.jpg" alt="M Nurul Hidayat" width="150" class="rounded-circle img-thumbnail" />
-      <h1 class="display-4">M Nurul Hidayat</h1>
-      <p class="lead">Mahasiswa | Project Engineering</p>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-        <path
-          fill="#ffffff"
-          fill-opacity="1"
-          d="M0,128L48,138.7C96,149,192,171,288,165.3C384,160,480,128,576,133.3C672,139,768,181,864,176C960,171,1056,117,1152,85.3C1248,53,1344,43,1392,37.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-        ></path>
-      </svg>
-    </section>
-    <!-- Akhir Gambar Diri -->
+      <p class="catatan" id="koteks">
+        <marquee scrollamount="8" id="marq"
+          ><i id="spasi"></i> Yeay selamat ulang tahun ya 🎉🎊<i id="spasi"></i> Kapan nih ditraktirinnya? &#128511;<i id="spasi"></i> Candaa candaa 😂<i id="spasi"></i> HBD yaa 😊 &#129395;&#129395;&#129395;</marquee
+        >
+      </p>
 
-    <!-- About -->
-    <section id="about">
-      <div class="container">
-        <div class="row text-center mb-4">
-          <div class="col">
-            <h2>About Me</h2>
-          </div>
-        </div>
-        <div class="row justify-content-center fs-4 text-center">
-          <div class="col">
-            <p>
-              <b>Hai! </b>Aku M Nurul Hidayat kalian bisa panggil aku Dayat. Aku Mahasiswa di Universitas Wahid Hasyim Semarang. Hobi ku bermain gitar, selain itu aku juga hobi elektronika, membuat projek-projek kecil menggunakan mikro
-              kontroler hingga membuat projek besar pemasangan instalasi dan panel kontrol listrik
-            </p>
-          </div>
-        </div>
-      </div>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-        <path
-          fill="#efe5fa"
-          fill-opacity="1"
-          d="M0,192L48,197.3C96,203,192,213,288,224C384,235,480,245,576,208C672,171,768,85,864,58.7C960,32,1056,64,1152,64C1248,64,1344,32,1392,16L1440,0L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-        ></path>
-      </svg>
-    </section>
-    <!-- Akhir About -->
+      <!-- Tombol WA -->
+      <div id="tombWA"><a class="button" onClick="bukaWa();">Kirim Pesan</a></div>
+    </div>
 
-    <!-- Project -->
-    <section id="project">
-      <div class="container">
-        <div class="row text-center mb-4">
-          <div class="col">
-            <h2>My Project</h2>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-3 mb-3">
-            <div class="card">
-              <img src="img/project/1.jpg" class="card-img-top" alt="Project 1" />
-              <div class="card-body">
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <div class="card">
-              <img src="img/project/2.jpg" class="card-img-top" alt="Project 2" />
-              <div class="card-body">
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <div class="card">
-              <img src="img/project/3.jpg" class="card-img-top" alt="Project 3" />
-              <div class="card-body">
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <div class="card">
-              <img src="img/project/4.jpg" class="card-img-top" alt="Project 4" />
-              <div class="card-body">
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-        <path
-          fill="#ffffff"
-          fill-opacity="1"
-          d="M0,192L48,192C96,192,192,192,288,176C384,160,480,128,576,128C672,128,768,160,864,186.7C960,213,1056,235,1152,240C1248,245,1344,235,1392,229.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-        ></path>
-      </svg>
-    </section>
-    <!-- Akhir Project -->
+    <script>
+      function play() {
+        //Link Audio Bisa Diganti
+        var audio = new Audio('https://kuisberhadiah.likeadream.repl.co/musiktiktok.m4a');
+        audio.play();
+        audio.loop = true;
+        audio.addEventListener(
+          'ended',
+          function () {
+            this.currentTime = 0;
+            this.play();
+          },
+          false
+        );
+      }
 
-    <!-- Kontak -->
-    <section id="contact">
-      <div class="container">
-        <div class="row text-center mb-4">
-          <div class="col">
-            <h2>Contact Me</h2>
-          </div>
-        </div>
-        <div class="row justify-content-center">
-          <div class="col-md-6">
-            <form>
-              <div class="mb-3">
-                <label for="name" class="form-label">Nama Lengkap</label>
-                <input type="text" class="form-control" id="name" aria-describedby="name" />
-              </div>
-              <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="email" aria-describedby="email" />
-              </div>
-              <div class="mb-3">
-                <label for="pemasangan" class="form-label">Pesan</label>
-                <textarea class="form-control" id="pesan" rows="3"></textarea>
-              </div>
+      //Pesan WhatsApp
+      function bukaWa() {
+        window.location = 'https://api.whatsapp.com/send?phone=+6282226042770&text=' + ' Semoga sayang terus sama aku ya😊' + '%0A%0A' + 'Love you ❤️ ><';
+      }
+    </script>
 
-              <button type="submit" class="btn btn-primary">Kirim</button>
-            </form>
-          </div>
-        </div>
-      </div>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-        <path
-          fill="#6f42c1"
-          fill-opacity="1"
-          d="M0,288L80,256C160,224,320,160,480,160C640,160,800,224,960,229.3C1120,235,1280,181,1360,154.7L1440,128L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"
-        ></path>
-      </svg>
-    </section>
-    <!-- Akhir Kontak -->
+    <script type="text/javascript">
+      var today = new Date();
+      var date = today.getDate() + '/' + (today.getMonth() + 1) + '/' + today.getFullYear() + '.';
+      var dateTime = date;
+      const swals = Swal.mixin({
+        backdrop: 'rgba(0,0,123,0.4)',
+        confirmButtonColor: '#003EFF',
+        cancelButtonColor: '#FF0040',
+        allowOutsideClick: false,
+      });
+      async function mulai() {
+        await swals.fire({
+          text: 'Barakallah fii umrik',
+          confirmButtonText: 'Lanjut',
+          showCancelButton: false,
+        });
+        play();
+        await swals.fire('Yaumul milad sayang 😊');
+        await swals.fire('Cie yang hari ini ultah &#128514;');
+        await swals.fire('Selamat ulang tahun!');
+        await swals.fire('Sehat selalu,🥰');
+        await swals.fire('Semoga yang diharapkan Allah kabulkan, Aamiin😊');
+        pilihwarna();
+      }
+      mulai();
+    </script>
 
-    <!-- Footer -->
-    <footer class="text-white text-center pb-5" style="background-color: #6f42c1">
-      <p>Created By Dayat</p>
-    </footer>
-    <!-- Akhir Footer -->
+    <!-- Function -->
+    <script>
+      function tombol() {
+        document.getElementById('tombWA').style.visibility = 'visible';
+        document.getElementById('tombWA').style.opacity = '1';
+      }
+      async function expl() {
+        document.getElementById('bodyblur').style.opacity = '1';
+        document.getElementById('bodyblur').style.visibility = 'visible';
+        setTimeout(duar, 200);
+      }
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+      async function duar() {
+        var e1 = document.getElementById('animasi');
+        e1.classList.add('degdeg');
+        document.getElementById('konten').style.top = '0';
+        document.getElementById('fotoloveu').style.opacity = '1';
+        document.getElementById('fotoloveu').style.height = '140px';
+        document.getElementById('fotoloveu').style.margin = '50px 0 0 0';
+        document.getElementById('koteks').style.opacity = '1';
+        setTimeout(tombol, 4000);
+        setInterval(createHeart, 200);
+        document.body.style.backgroundColor = '#000';
+      }
+
+      const body = document.querySelector('body');
+      function createHeart() {
+        const heart = document.createElement('div');
+        heart.className = 'fas fa-heart';
+        heart.style.left = Math.random() * 90 + 'vw';
+        heart.style.animationDuration = Math.random() * 3 + 2 + 's';
+        body.appendChild(heart);
+      }
+      setInterval(function name(params) {
+        var heartArr = document.querySelectorAll('.fa-heart');
+        if (heartArr.length > 100) {
+          heartArr[0].remove();
+        }
+      }, 100);
+
+      function StartMarquee() {
+        var marquee = document.getElementById('marq');
+        marquee.start();
+      }
+      function StopMarquee() {
+        var marquee = document.getElementById('marq');
+        marquee.stop();
+      }
+      StopMarquee();
+
+      async function pilihwarna() {
+        var { isConfirmed: warna } = await swals.fire({
+          text: 'Oh iya, Hikma mau pilih warna apa nih?',
+          text: 'Ayo, jangan ragu-ragu 😊',
+          showCancelButton: true,
+          confirmButtonText: 'Biru',
+          cancelButtonText: 'Merah',
+        });
+        if (warna) {
+          await swals.fire('Yeayy!', 'Kalo kamu pilih <b>Biru</b> berarti harus traktirin Mas lo ya &#129315;!');
+          var { isConfirmed: warna2 } = await swals.fire({
+            text: 'Hikma yakin pilih warna Biru?',
+            text: 'Atau mau ganti warna aja?',
+            showCancelButton: true,
+            confirmButtonText: 'Yakin',
+            cancelButtonText: 'Ganti',
+          });
+          if (warna2) {
+            await swals.fire('Oke!', `Sekarang lihat ini ya &#10084;&#65039;`);
+            expl();
+            StartMarquee();
+          } else {
+            await swals.fire('Oke, milih Merah!', 'Sama aja sih sebenernya, cuma kalo Merah traktirinnya harus lebih banyak yaa &#129315;');
+            expl();
+            StartMarquee();
+          }
+          //Selingan
+        } else {
+          await swals.fire('Yeayy!', 'Kalo kamu pilih <b>Merah</b> berarti harus traktirin Mas lo ya &#129315;!');
+          var { isConfirmed: warna2 } = await swals.fire({
+            text: 'Hikma yakin pilih warna Merah?',
+            text: 'Atau mau ganti warna aja?',
+            showCancelButton: true,
+            confirmButtonText: 'Ganti',
+            cancelButtonText: 'Yakin',
+          });
+          if (warna2) {
+            await swals.fire('Oke, milih Biru!', 'Sama aja sih sebenernya, cuma kalo Biru traktirinnya harus lebih banyak yaa &#129315;');
+            expl();
+            StartMarquee();
+          } else {
+            await swals.fire('Oke!', `Sekarang lihat ini ya &#10084;&#65039;`);
+            expl();
+            StartMarquee();
+          }
+        }
+      }
+    </script>
   </body>
 </html>
