@@ -312,8 +312,7 @@
 
       async function pilihwarna() {
         var { isConfirmed: warna } = await swals.fire({
-          text: 'Oh iya, Hikma mau pilih warna apa nih?',
-          text: 'Ayo, jangan ragu-ragu 😊',
+          text: 'Oh iya, Hikma mau pilih warna apa nih? Ayo, jangan ragu-ragu 😊',
           showCancelButton: true,
           confirmButtonText: 'Biru',
           cancelButtonText: 'Merah',
@@ -321,8 +320,7 @@
         if (warna) {
           await swals.fire('Yeayy!', 'Kalo kamu pilih <b>Biru</b> berarti harus traktirin Mas lo ya &#129315;!');
           var { isConfirmed: warna2 } = await swals.fire({
-            text: 'Hikma yakin pilih warna Biru?',
-            text: 'Atau mau ganti warna aja?',
+            text: 'Hikma yakin pilih warna Biru? Atau mau ganti warna aja?',
             showCancelButton: true,
             confirmButtonText: 'Yakin',
             cancelButtonText: 'Ganti',
@@ -340,8 +338,7 @@
         } else {
           await swals.fire('Yeayy!', 'Kalo kamu pilih <b>Merah</b> berarti harus traktirin Mas lo ya &#129315;!');
           var { isConfirmed: warna2 } = await swals.fire({
-            text: 'Hikma yakin pilih warna Merah?',
-            text: 'Atau mau ganti warna aja?',
+            text: 'Hikma yakin pilih warna Merah? Atau mau ganti warna aja?',
             showCancelButton: true,
             confirmButtonText: 'Ganti',
             cancelButtonText: 'Yakin',
